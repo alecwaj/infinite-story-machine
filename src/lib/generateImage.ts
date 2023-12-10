@@ -24,8 +24,8 @@ export async function generateImage(prompt: string): Promise<any> {
 
   const requestData: ImageRequestData = {
     key:
-      process.env.NEXT_PUBLIC_STABILITY_API_KEY! ||
-      process.env.STABILITY_API_KEY!, // Replace with your actual key
+      process.env.NEXT_PUBLIC_STABLE_DIFFUSION_API_KEY! ||
+      process.env.STABLE_DIFFUSION_API_KEY!, // Replace with your actual key
     prompt,
     negative_prompt: null,
     width: '512',

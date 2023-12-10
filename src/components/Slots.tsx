@@ -1,190 +1,232 @@
 'use client';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SlotCounter, { SlotCounterRef } from 'react-slot-counter';
 import { getRandomValueFromArray } from '../../util';
 import { cn } from '@/lib/utils';
-import { GenerateButton } from './GenerateButton';
+import { generateImage } from '@/lib/generateImage';
+import { Button } from './ui/button';
+import useCreateIpAsset from '../../hooks/useCreateIpAsset';
 
-const charactersList = [
-  'Sherlock Holmes',
-  'Dr. John Watson',
-  'Dracula',
-  "Frankenstein's Monster",
-  'The Invisible Man',
-  'Robin Hood',
-  'King Arthur',
-  'The Three Musketeers',
-  'Alice (from Alice in Wonderland)',
-  'Dorothy Gale (from The Wizard of Oz)',
-  'Scarecrow (from The Wizard of Oz)',
-  'Tin Woodman (from The Wizard of Oz)',
-  'Cowardly Lion (from The Wizard of Oz)',
-  'Peter Pan',
-  'Captain Hook',
-  'Moby Dick',
-  'Tom Sawyer',
-  'Huckleberry Finn',
-  'Ebenezer Scrooge',
-  'Hamlet',
-];
-const storyList = [
-  'Pride and Prejudice by Jane Austen',
-  'Moby Dick by Herman Melville',
-  'A Tale of Two Cities by Charles Dickens',
-  'Dracula by Bram Stoker',
-  'Frankenstein by Mary Shelley',
-  'The Adventures of Sherlock Holmes by Arthur Conan Doyle',
-  "Alice's Adventures in Wonderland by Lewis Carroll",
-  'The Great Gatsby by F. Scott Fitzgerald',
-  'The Picture of Dorian Gray by Oscar Wilde',
-  'Wuthering Heights by Emily Brontë',
-  'The Adventures of Huckleberry Finn by Mark Twain',
-  'Jane Eyre by Charlotte Brontë',
-  'War and Peace by Leo Tolstoy',
-  'The Call of the Wild by Jack London',
-  'The Wonderful Wizard of Oz by L. Frank Baum',
-  'Crime and Punishment by Fyodor Dostoevsky',
-  'The Brothers Karamazov by Fyodor Dostoevsky',
-  'Heart of Darkness by Joseph Conrad',
-  "Gulliver's Travels by Jonathan Swift",
-  'Don Quixote by Miguel de Cervantes',
-];
-const twistList = [
-  'twist 1',
-  'twist 2',
-  'twist 3',
-  'twist 4',
-  'twist 5',
-  'twist 6',
-  'twist 7',
-];
+const charactersList = {
+  '🧞‍♂️': 'Sherlock Holmes',
+  '🥷': 'Dr. John Watson',
+  '👹': 'Dracula',
+  '👩‍🦰': "Frankenstein's Monster",
+  '👸': 'The Invisible Man',
+  '🤡': 'Robin Hood',
+  '🕵️‍♂️': 'King Arthur',
+  '🥸': 'The Three Musketeers',
+  '🧙‍♂️': 'Alice (from Alice in Wonderland)',
+  '🧟': 'Dorothy Gale (from The Wizard of Oz)',
+};
+
+const storyList = {
+  '🚀': 'A Tale of Two Cities by Charles Dickens',
+  '🛸': 'Dracula by Bram Stoker',
+  '🛩': 'Frankenstein by Mary Shelley',
+  '⛵️': 'The Adventures of Sherlock Holmes by Arthur Conan Doyle',
+  '⚔️': "Alice's Adventures in Wonderland by Lewis Carroll",
+  '🗺': 'The Great Gatsby by F. Scott Fitzgerald',
+  '🎎': 'The Picture of Dorian Gray by Oscar Wilde',
+  '🗝': 'Moby Dick by Herman Melville',
+  '🧭': 'A Tale of Two Cities by Charles Dickens',
+  '🪦': 'Dracula by Bram Stoker',
+  '📖': 'Wuthering Heights by Emily Brontë',
+};
+
+const twistList = {
+  '🪄': 'twist 1',
+  '🪅': 'tw 2',
+  '💣': 't3',
+  '💥': 't4',
+  '⚡️': 't5',
+  '🐉': 't6',
+  '🦪': 't7',
+  '🎲': 't8',
+  '🍀': 't9',
+  '💘': 't11',
+  '🔓': 't111',
+};
 
 export default function Slots() {
   const charRef = useRef<SlotCounterRef>(null);
   const storyRef = useRef<SlotCounterRef>(null);
   const twistRef = useRef<SlotCounterRef>(null);
-
   const [isCharLocked, setIsCharLocked] = React.useState<boolean>(false);
   const [isStoryLocked, setIsStoryLocked] = React.useState<boolean>(false);
   const [isTwistLocked, setIsTwistLocked] = React.useState<boolean>(false);
+
+  const twistListArray = Object.keys(twistList);
+  const charListArray = Object.keys(charactersList);
+  const storyListArray = Object.keys(storyList);
+  const [twistValue, setTwistValue] = React.useState<string[]>(
+    getRandomValueFromArray(twistListArray)
+  );
   const [charValue, setCharValue] = React.useState<string[]>(
-    getRandomValueFromArray(charactersList)
+    getRandomValueFromArray(charListArray)
   );
   const [storyValue, setStoryValue] = React.useState<string[]>(
-    getRandomValueFromArray(charactersList)
-  );
-  const [twistValue, setTwistValue] = React.useState<string[]>(
-    getRandomValueFromArray(charactersList)
+    getRandomValueFromArray(storyListArray)
   );
 
   const prompt = `${charValue} ${storyValue} ${twistValue}`;
+  console.log('prompt', prompt);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isGeneratingSuccess, setIsGeneratingSuccess] = useState(false);
+  const [createReq, setCreateReq] = useState<any>();
+
+  async function onSubmit(prompt: string) {
+    setIsGeneratingImage(true);
+    setIsGeneratingSuccess(false);
+    const response = await generateImage(prompt);
+    setIsGeneratingImage(false);
+    console.log('res', response);
+    setIsGeneratingSuccess(true);
+    setImageUrl(response.output[0]);
+
+    const createReq = {
+      name: prompt,
+      typeIndex: 0,
+      ipOrgId: process.env.NEXT_PUBLIC_ISM_IP_ORG_ID,
+      mediaUrl: imageUrl,
+    };
+
+    await setCreateReq(createReq);
+  }
+
+  const { execute } = useCreateIpAsset(createReq);
+  useEffect(() => {
+    if (createReq) {
+      execute();
+    }
+  }, [createReq]);
+
+  const RollButton = () => {
+    return (
+      <button
+        className="rounded-lg p-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-40 mx-auto border-2 shadow-xl text-black"
+        onClick={() => {
+          if (!isCharLocked) {
+            setCharValue(getRandomValueFromArray(charListArray));
+            charRef.current?.startAnimation({
+              duration: 2,
+              dummyCharacterCount: charListArray.length,
+              direction: 'top-down',
+            });
+          }
+          if (!isStoryLocked) {
+            setStoryValue(getRandomValueFromArray(storyListArray));
+            storyRef.current?.startAnimation({
+              duration: 3,
+              dummyCharacterCount: storyListArray.length,
+              direction: 'top-down',
+            });
+          }
+          if (!isTwistLocked) {
+            setTwistValue(getRandomValueFromArray(twistListArray));
+            twistRef.current?.startAnimation({
+              duration: 4,
+              dummyCharacterCount: twistListArray.length,
+              direction: 'top-down',
+            });
+          }
+        }}
+      >
+        {isGeneratingSuccess ? 'Roll again?' : 'Roll'}
+      </button>
+    );
+  };
 
   return (
     <>
-      <div className="flex flex-col">
-        <h1 className="text-3xl text-red-600">Slots</h1>
-        <button
-          onClick={() => {
-            if (!isCharLocked) {
-              setCharValue(getRandomValueFromArray(charactersList));
-              charRef.current?.startAnimation({
-                duration: 2,
-                dummyCharacterCount: 10,
-                direction: 'top-down',
-              });
-            }
-            if (!isStoryLocked) {
-              setStoryValue(getRandomValueFromArray(storyList));
-              storyRef.current?.startAnimation({
-                duration: 3,
-                dummyCharacterCount: 10,
-                direction: 'top-down',
-              });
-            }
-            if (!isTwistLocked) {
-              setTwistValue(getRandomValueFromArray(twistList));
-              twistRef.current?.startAnimation({
-                duration: 4,
-                dummyCharacterCount: 20,
-                direction: 'top-down',
-              });
-            }
-          }}
-        >
-          Generate
-        </button>
-        <div className="flex flex-row gap-10">
+      <div className="flex flex-col my-4 mx-[500px]">
+        <div className="flex flex-row justify-between">
+          <p className="flex mx-auto font-bold text-2xl my-2 bg-white p-2 rounded-lg border-2 border-black">
+            Character
+          </p>
+          <p className="flex mx-auto font-bold text-2xl my-2 bg-white p-2 rounded-lg border-2 border-black">
+            Plot
+          </p>
+          <p className="flex mx-auto font-bold text-2xl my-2 bg-white p-2 rounded-lg border-2 border-black">
+            Twist
+          </p>
+        </div>
+        <div className="flex flex-row border-2 border-black bg-white justify-between">
           <div
+            onClick={() => setIsCharLocked((bool) => !bool)}
             className={cn({
-              'text-2xl h-50 flex flex-col items-center border-2 border-transparent p-10':
+              'text-5xl h-50 flex flex-col items-center border-2 border-transparent p-10 mx-auto':
                 true,
               'border-red-500': isCharLocked,
             })}
           >
-            <button
-              onClick={() => setIsCharLocked((bool) => !bool)}
-              className="text-xs"
-            >
-              {isCharLocked ? '🔒 Locked' : 'Lock Selection'}
-            </button>
             <SlotCounter
               ref={charRef}
               key={'characterSlots'}
               value={[<>{charValue}</>]}
-              dummyCharacters={charactersList}
-              dummyCharacterCount={20}
+              dummyCharacters={charListArray}
+              dummyCharacterCount={charListArray.length}
               duration={2}
+              className="text-3xl scale-150"
             />
           </div>
           <div
+            onClick={() => setIsStoryLocked((bool) => !bool)}
             className={cn({
-              'text-2xl h-50 flex flex-col items-center border-2 border-transparent p-10':
+              'text-5xl h-50 flex flex-col items-center border-2 border-transparent p-10 mx-auto':
                 true,
               'border-red-500': isStoryLocked,
             })}
           >
-            <button
-              onClick={() => setIsStoryLocked((bool) => !bool)}
-              className="text-xs"
-            >
-              {isStoryLocked ? '🔒 Locked' : 'Lock Selection'}
-            </button>
             <SlotCounter
               ref={storyRef}
               key={'storySlots'}
               value={[<>{storyValue}</>]}
-              dummyCharacters={storyList}
-              dummyCharacterCount={20}
+              dummyCharacters={storyListArray}
+              dummyCharacterCount={storyListArray.length}
               duration={2}
             />
           </div>
           <div
+            onClick={() => setIsTwistLocked((bool) => !bool)}
             className={cn({
-              'text-2xl h-50 flex flex-col items-center border-2 border-transparent p-10':
+              'text-5xl h-50 flex flex-col items-center border-2 border-transparent p-10 mx-auto':
                 true,
               'border-red-500': isTwistLocked,
             })}
           >
-            <button
-              onClick={() => setIsTwistLocked((bool) => !bool)}
-              className="text-xs"
-            >
-              {isTwistLocked ? '🔒 Locked' : 'Lock Selection'}
-            </button>
             <SlotCounter
               ref={twistRef}
               key={'twistSlots'}
               value={[<>{twistValue}</>]}
-              dummyCharacters={twistList}
-              dummyCharacterCount={20}
+              dummyCharacters={storyListArray}
+              dummyCharacterCount={storyListArray.length}
               duration={2}
             />
           </div>
         </div>
       </div>
+      <RollButton />
       <div className="w-full flex mx-auto">
-        <GenerateButton prompt={prompt} />
+        <Button onClick={() => onSubmit(prompt)}>
+          {isGeneratingImage ? 'Generating' : 'Generate Image'}
+        </Button>
       </div>
+      <section className="flex flex-row justify-between mx-24">
+        <div className="bg-white">
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt={'Generated image'}
+              className="w-[500px] h-[500px]"
+            />
+          )}
+        </div>
+        <div className="bg-white h-80 w-[800px] rounded-xl border-2 border-black shadow-lg text-sm my-auto flex">
+          {twistList[twistRef]} {charactersList[charRef]}
+        </div>
+      </section>
     </>
   );
 }
