@@ -35,17 +35,17 @@ const storyList = {
 };
 
 const twistList = {
-  '🪄': 'twist 1',
-  '🪅': 'tw 2',
-  '💣': 't3',
-  '💥': 't4',
-  '⚡️': 't5',
-  '🐉': 't6',
-  '🦪': 't7',
-  '🎲': 't8',
-  '🍀': 't9',
-  '💘': 't11',
-  '🔓': 't111',
+  '🪄': 'Accidental Public Confession',
+  '🪅': 'Actually a Doombot: The villain the hero was fighting turns out to be a robot double or clone of the real villain.	',
+  '💣': 'All Just a Prank: A major plot ends up to be a practical joke.',
+  '💥': 'Ass Pull: An explanation or solution that comes out of nowhere and disregards what has already been established by the story, named from the idea that the writer just pulled an answer from their ass in desperation for a quick and convenient way to resolve the conflict.	',
+  '⚡️': 'Backstab Backfire',
+  '🐉': 'Be Careful What You Wish For: A character makes a wish. Once the wish is granted, they learn the hard way that there are downsides to what they wanted.	',
+  '🦪': 'The Big Bad Shuffle',
+  '🎲': 'Booked Full of Mooks: A character in a public space discovers that all the bystanders around them are actually another characters employees or co-conspirators.',
+  '🍀': 'Career-Ending Injury',
+  '💘': 'Didnt See That Coming',
+  '🔓': 'Doom as Test Prize',
 };
 
 export default function Slots() {
@@ -59,17 +59,21 @@ export default function Slots() {
   const twistListArray = Object.keys(twistList);
   const charListArray = Object.keys(charactersList);
   const storyListArray = Object.keys(storyList);
-  const [twistValue, setTwistValue] = React.useState<string[]>(
+  const [twistValue, setTwistValue] = React.useState<string>(
     getRandomValueFromArray(twistListArray)
   );
-  const [charValue, setCharValue] = React.useState<string[]>(
+  const [charValue, setCharValue] = React.useState<string>(
     getRandomValueFromArray(charListArray)
   );
-  const [storyValue, setStoryValue] = React.useState<string[]>(
+  const [storyValue, setStoryValue] = React.useState<string>(
     getRandomValueFromArray(storyListArray)
   );
 
-  const prompt = `${charValue} ${storyValue} ${twistValue}`;
+  console.log('charValue', charValue);
+
+  const prompt = `${charactersList[charValue as string]} ${
+    storyList[storyValue as string]
+  } ${twistList[twistValue as string]}`;
   console.log('prompt', prompt);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -98,6 +102,7 @@ export default function Slots() {
   const { execute } = useCreateIpAsset(createReq);
   useEffect(() => {
     if (createReq) {
+      console.log('createReq is', createReq);
       execute();
     }
   }, [createReq]);
@@ -223,10 +228,22 @@ export default function Slots() {
             />
           )}
         </div>
-        <div className="bg-white h-80 w-[800px] rounded-xl border-2 border-black shadow-lg text-sm my-auto flex">
-          {twistList[twistRef]} {charactersList[charRef]}
+        <div className="bg-white h-80 w-[800px] px-8 rounded-xl border-2 border-black shadow-lg my-auto flex flex-col text-xl gap-4 py-20">
+          <h1>{charactersList[charValue as string]}</h1>
+          <h1>{storyList[storyValue as string]}</h1>
+          <h1>{twistList[twistValue as string]}</h1>
         </div>
       </section>
+      <div className="py-8">
+        {isGeneratingSuccess ? (
+          <Button
+            className="text-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+            onClick={() => execute()}
+          >
+            Create IP Asset
+          </Button>
+        ) : null}
+      </div>
     </>
   );
 }
