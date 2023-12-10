@@ -1,5 +1,4 @@
-import { GenerateForm } from '@/components/GenerateForm';
-import Pachinko from '@/components/Pachinko';
+import { GenerateForm } from "@/components/GenerateForm";
 
 export default function Home() {
   return (
