@@ -23,7 +23,9 @@ export async function generateImage(prompt: string): Promise<any> {
   myHeaders.append('Content-Type', 'application/json');
 
   const requestData: ImageRequestData = {
-    key: process.env.NEXT_PUBLIC_STABILITY_API_KEY!, // Replace with your actual key
+    key:
+      process.env.NEXT_PUBLIC_STABILITY_API_KEY! ||
+      process.env.STABILITY_API_KEY!, // Replace with your actual key
     prompt,
     negative_prompt: null,
     width: '512',
@@ -41,7 +43,7 @@ export async function generateImage(prompt: string): Promise<any> {
     webhook: null,
     track_id: null,
   };
-
+  console.log('Request data:', requestData);
   const requestOptions: RequestInit = {
     method: 'POST',
     headers: myHeaders,
