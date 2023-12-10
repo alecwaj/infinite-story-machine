@@ -71,9 +71,8 @@ export default function Slots() {
 
   console.log('charValue', charValue);
 
-  const prompt = `${charactersList[charValue as string]} ${
-    storyList[storyValue as string]
-  } ${twistList[twistValue as string]}`;
+  const prompt = `Create an image of ${charactersList[charValue as string]} playing a role in the story of ${storyList[storyValue as string]
+    } demonstrating the literary trope of ${twistList[twistValue as string]}`;
   console.log('prompt', prompt);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);

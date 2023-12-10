@@ -1,5 +1,6 @@
 import Slots from '@/components/Slots';
 import WagmiConfigWrapper from '@/components/WagmiConfig';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
         The Infinite Story Machine
       </h1>
       <WagmiConfigWrapper>
+        ,<div className='absolute right-8 top-8'><ConnectButton></ConnectButton></div>
         <Slots />
       </WagmiConfigWrapper>
     </main>
